@@ -57,7 +57,7 @@ def render(guess: str, index: int, songs: list, current_status: str):
     controls = Panel(
         Align.center(
             "Game over" not in current_status
-            and "[bold]up/down[/] to navigate | [bold]enter[/] to submit | [bold]space[/] to replay | [bold]`[/] to give up and add more time"
+            and "[bold]up/down[/] to navigate | [bold]enter[/] to submit | [bold]tab[/] to replay | [bold]backtick[/] to add more time"
             or "Press enter to continue"
         ),
         box=box.ROUNDED,
@@ -92,11 +92,12 @@ score = 0
 
 # COMPLEX ASS INPUT HANDLER!! I HATE MAKING GAMES IN PYTHON!!!
 def add_box_thingy(songs, correct_song, player):
+    global score
+
     with Live(console=console, refresh_per_second=15, transient=True) as live:
         guess = ""
         index = 0
         status = f"[bold]Score = {score}[/] | Type your guess"
-        past_guesses = []
         current_increment = 0
         increments = [0.5, 1, 2, 6, 8, 14]
         is_game_over = False
@@ -120,6 +121,7 @@ def add_box_thingy(songs, correct_song, player):
 
                     continue
 
+                status = f"Current song duration: {increments[current_increment]}s - {6 - current_increment} guesses left"
                 play_for_duration(
                     player,
                     increments[current_increment],
@@ -136,17 +138,37 @@ def add_box_thingy(songs, correct_song, player):
                 if is_game_over:
                     break
                 if matches:
-                    print(
-                        correct_song["name"],
-                        matches[index],
-                        correct_song["name"] in matches[index],
-                    )
+                    # print(
+                    #     correct_song["name"],
+                    #     matches[index],
+                    #     correct_song["name"] in matches[index],
+                    # )
                     if correct_song["name"] in matches[index]:
-                        print("you win")
-                    else:
-                        print("DIE")
+                        is_game_over = True
+                        status = f"Correct! You identified {correct_song['name']} - {correct_song['artist']} in {increments[current_increment]} seconds and earned {increments[::-1][current_increment]} points. Press enter to play again!"
 
-            elif key == " ":
+                        score += increments[::-1][current_increment]
+
+                        play_for_duration(player, 60, 2)
+                    else:
+                        # skip logic
+                        current_increment += 1
+                        if current_increment == 6:
+                            is_game_over = True
+
+                            status = f"Game over - correct song was {correct_song['name']} - {correct_song['artist']}!"
+                            play_for_duration(player, 60, 2)
+
+                            continue
+
+                        status = f"{matches[index]} is incorrect! {6 - current_increment} guesses remaining."
+                        play_for_duration(
+                            player,
+                            increments[current_increment],
+                            2,
+                        )
+
+            elif key == readchar.key.TAB:
                 play_for_duration(
                     player,
                     increments[current_increment],
