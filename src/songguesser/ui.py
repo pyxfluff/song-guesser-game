@@ -56,7 +56,7 @@ def render(guess: str, index: int, songs: list, current_status: str):
 
     controls = Panel(
         Align.center(
-            "Game over" not in current_status
+            not is_game_over
             and "[bold]up/down[/] to navigate | [bold]enter[/] to submit | [bold]tab[/] to replay | [bold]backtick[/] to add more time"
             or "Press enter to continue"
         ),
@@ -88,11 +88,11 @@ def play_for_duration(player, duration, start_position):
 
 
 score = 0
-
+is_game_over = False
 
 # COMPLEX ASS INPUT HANDLER!! I HATE MAKING GAMES IN PYTHON!!!
 def add_box_thingy(songs, correct_song, player):
-    global score
+    global score, is_game_over
 
     with Live(console=console, refresh_per_second=15, transient=True) as live:
         guess = ""
@@ -145,7 +145,7 @@ def add_box_thingy(songs, correct_song, player):
                     # )
                     if correct_song["name"] in matches[index]:
                         is_game_over = True
-                        status = f"Correct! You identified {correct_song['name']} - {correct_song['artist']} in {increments[current_increment]} seconds and earned {increments[::-1][current_increment]} points. Press enter to play again!"
+                        status = f"Correct! You identified {correct_song['name']} - {correct_song['artist']} in {increments[current_increment]} seconds and earned {increments[::-1][current_increment]} points."
 
                         score += increments[::-1][current_increment]
 
